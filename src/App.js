@@ -15,6 +15,7 @@ const App = () => {
       .then(initialNotes => {
         setNotes(initialNotes)
       })
+      .catch(err => console.log("can't initalize notes", err))
   }, [])
 
   const toggleImportanceOf = id => {
@@ -26,6 +27,7 @@ const App = () => {
       .then(returnedNote => {
         setNotes(notes.map(note => note.id !== id ? note : returnedNote))
       })
+      .catch(error => console.log('failed to toggle importance', error))
   }
 
   const addNote = (event) => {
@@ -42,7 +44,7 @@ const App = () => {
         setNotes(notes.concat(returnedNote))
         setNewNote('')
       })
-      // .catch(err => console.log(""))
+      .catch(err => console.log("can't add note", err))
   }
 
   const handleNoteChange = (event) => {
