@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-// import axios from 'axios'
+
 import Note from './components/Note'
 import LoginForm from './components/LoginForm'
 import Footer from './components/Footer'
 import Togglable from './components/Togglable'
 import NoteForm from './components/NoteForm'
+import Notification from './components/Notification'
+
 import noteService from './services/notes'
 import loginService from './services/login'
 
@@ -16,7 +18,7 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [loginVisible, setLoginVisible] = useState(false)
+  const [loginVisible, setLoginVisible] = useState(false) // delete
 
   useEffect(() => {
     noteService
@@ -35,43 +37,6 @@ const App = () => {
       noteService.setToken(user.token)
     }
   }, [])
-
-  const toggleImportanceOf = id => {
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-
-    noteService
-      .update(id, changedNote)
-      .then(returnedNote => {
-        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
-      })
-      .catch(error => console.log('failed to toggle importance', error))
-  }
-
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      date: new Date().toISOString(),
-      important: Math.random() > 0.5
-    }
-
-    noteService
-      .create(noteObject)
-      .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-        setNewNote('')
-      })
-      .catch(err => console.log("can't add note", err))
-  }
-
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
-  }
-
-  const notesToShow = showAll
-  ? notes
-  : notes.filter(note => note.important)
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -96,8 +61,53 @@ const App = () => {
     }
   }
 
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      date: new Date().toISOString(),
+      important: Math.random() > 0.5
+    }
+
+    noteService
+      .create(noteObject)
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+        setNewNote('')
+      })
+      .catch(err => console.log("can't add note", err))
+  }
+
+  const handleNoteChange = (event) => {
+    setNewNote(event.target.value)
+  }
+
+  const toggleImportanceOf = id => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = { ...note, important: !note.important }
+
+    noteService
+      .update(id, changedNote)
+      .then(returnedNote => {
+        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+      })
+      .catch(error => {
+        setErrorMessage(
+          `Note '${note.content}' was already removed from server`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+        setNotes(notes.filter(n => n.id !== id))
+      })
+  }
+
+  const notesToShow = showAll
+  ? notes
+  : notes.filter(note => note.important)
+
   const loginForm = () => {
-    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
+    const hideWhenVisible = { display: loginVisible ? 'none' : '' }  // delete
     const showWhenVisible = { display: loginVisible ? '' : 'none' }
 
     return (
@@ -132,6 +142,8 @@ const App = () => {
   return (
     <div>
       <h1>Notes</h1>
+
+      <Notification message={errorMessage} />
 
       {user === null ?
         <Togglable buttonLabel='login'>
@@ -170,6 +182,7 @@ const App = () => {
         )}
       </ul>
 
+      <Footer />
     </div>
   )
 }
