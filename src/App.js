@@ -25,7 +25,7 @@ const App = () => {
       .then(initialNotes => {
         setNotes(initialNotes)
       })
-      .catch(err => console.log("can't initalize notes", err))
+      .catch(err => console.log('failed to initalize notes', err))
   }, [])
 
   useEffect(() => {
